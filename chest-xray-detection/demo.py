@@ -246,6 +246,38 @@ def option_gradcam_single():
     pause()
 
 
+def option_report():
+    """Option 6 — Generate a PDF summary report."""
+    section("Option 6 — Generate PDF Report")
+
+    if not check_model():
+        error("No trained model found. Please run Option 1 first.")
+        pause()
+        return
+
+    if not check_dataset():
+        error("Dataset not found. Please run Option 0 first.")
+        pause()
+        return
+
+    print("  This will generate a full PDF report including:")
+    print("    • Overall and per-class accuracy")
+    print("    • Confusion matrix")
+    print("    • Grad-CAM heatmap samples")
+    print("    • Plain-English performance summary")
+    print()
+    print("  Output file: xray_report.pdf")
+    print()
+    confirm = input("  Generate report? (y/n): ").strip().lower()
+    if confirm == "y":
+        import report
+        report.generate_report()
+        success("Report saved as xray_report.pdf")
+    else:
+        info("Cancelled.")
+    pause()
+
+
 def option_gradcam_compare():
     """Option 5b — Grad-CAM comparison across multiple images."""
     section("Option 5b — Grad-CAM: Compare NORMAL vs PNEUMONIA")
@@ -282,6 +314,7 @@ MENU_OPTIONS = [
     ("4", "Visualize test results (image grid)",    option_visualize),
     ("5a", "Grad-CAM heatmap — single image",       option_gradcam_single),
     ("5b", "Grad-CAM comparison — NORMAL vs PNEUMONIA", option_gradcam_compare),
+    ("6", "Generate PDF report",                    option_report),
     ("q", "Quit",                                   None),
 ]
 
