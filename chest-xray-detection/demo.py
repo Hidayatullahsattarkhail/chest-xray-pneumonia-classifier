@@ -24,7 +24,7 @@ def header():
     print("=" * 58)
     print("  🫁  Chest X-Ray Pneumonia Detection — AI Demo")
     print("=" * 58)
-    print("  Built with PyTorch + ResNet18")
+    print("  Built with PyTorch + DenseNet121 + MLflow")
     print("  Classes: NORMAL  |  PNEUMONIA")
     print("=" * 58)
     print()
@@ -246,6 +246,30 @@ def option_gradcam_single():
     pause()
 
 
+def option_export():
+    """Option 7 — Export model to TorchScript for deployment."""
+    section("Option 7 — Export Model to TorchScript")
+
+    if not check_model():
+        error("No trained model found. Please run Option 1 first.")
+        pause()
+        return
+
+    print("  TorchScript converts your model into a portable format")
+    print("  that can run without Python — great for FastAPI or C++ apps.")
+    print()
+    print("  Output file: densenet121_pneumonia_prod.pt")
+    print()
+    confirm = input("  Export model? (y/n): ").strip().lower()
+    if confirm == "y":
+        import export as export_module
+        export_module.export()
+        success("Model exported to densenet121_pneumonia_prod.pt")
+    else:
+        info("Cancelled.")
+    pause()
+
+
 def option_report():
     """Option 6 — Generate a PDF summary report."""
     section("Option 6 — Generate PDF Report")
@@ -315,6 +339,7 @@ MENU_OPTIONS = [
     ("5a", "Grad-CAM heatmap — single image",       option_gradcam_single),
     ("5b", "Grad-CAM comparison — NORMAL vs PNEUMONIA", option_gradcam_compare),
     ("6", "Generate PDF report",                    option_report),
+    ("7", "Export model to TorchScript (for deployment)", option_export),
     ("q", "Quit",                                   None),
 ]
 
