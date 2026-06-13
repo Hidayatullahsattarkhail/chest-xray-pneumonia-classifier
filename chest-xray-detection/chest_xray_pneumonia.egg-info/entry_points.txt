@@ -1,0 +1,13 @@
+[console_scripts]
+xray-compare = cli:compare
+xray-demo = cli:demo
+xray-download = cli:download
+xray-evaluate = cli:evaluate
+xray-export = cli:export
+xray-gradcam = cli:gradcam
+xray-predict = cli:predict
+xray-report = cli:report
+xray-serve = cli:serve
+xray-test-api = cli:test_api
+xray-train = cli:train
+xray-visualize = cli:visualize

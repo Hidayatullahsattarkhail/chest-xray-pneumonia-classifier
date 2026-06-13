@@ -1,28 +1,80 @@
 # Chest X-Ray Pneumonia Detection
 
-A simple PyTorch image classifier that detects **NORMAL** vs **PNEUMONIA** in chest X-ray images using a pretrained ResNet18.
+A beginner-friendly PyTorch project that detects **NORMAL vs PNEUMONIA** in chest X-rays using **DenseNet121** — complete with training, evaluation, Grad-CAM explainability, a FastAPI server, and a PDF report generator.
 
 ---
 
-## Quick Start
+## Quick Start (two ways)
+
+### Option A — Interactive demo menu
+
+```bash
+cd chest-xray-detection
+pip install -e .      # one-time install (registers all xray-* commands)
+xray-demo             # launches the interactive menu
+```
+
+The demo walks you through every step with numbered options.
+
+### Option B — Install then use individual commands
+
+```bash
+cd chest-xray-detection
+pip install -e .      # one-time setup
+```
+
+Then use the commands below from any directory.
+
+---
+
+## All Commands
+
+| Command | What it does |
+|---|---|
+| `xray-download` | Download the Kaggle dataset into `data/` |
+| `xray-train` | Fine-tune DenseNet121, saves `best_model.pth` |
+| `xray-evaluate` | Accuracy, F1, confusion matrix, ROC curve |
+| `xray-predict <image>` | Predict one X-ray (NORMAL / PNEUMONIA + confidence) |
+| `xray-visualize` | Grid of test predictions with colour-coded correctness |
+| `xray-gradcam <image>` | Grad-CAM heatmap for one image (shows _why_ the model decided) |
+| `xray-compare` | Side-by-side Grad-CAM comparison across both classes |
+| `xray-report` | Generate a full PDF report (`xray_report.pdf`) |
+| `xray-export` | Export model to TorchScript for production |
+| `xray-serve` | Start the FastAPI prediction server |
+| `xray-test-api` | Validate the running API against test images |
+| `xray-demo` | Interactive menu tying all of the above together |
+
+**Examples:**
+
+```bash
+xray-predict data/test/PNEUMONIA/person1_virus_1.jpeg
+xray-gradcam data/test/NORMAL/IM-0001-0001.jpeg
+xray-visualize --num 16 --only-wrong
+xray-compare --num-per-class 3
+xray-serve --port 9000
+xray-test-api --num 20
+```
+
+---
+
+## Step-by-Step Walkthrough
 
 ### 1. Install dependencies
 
 ```bash
-pip install -r requirements.txt
+cd chest-xray-detection
+pip install -e .
 ```
 
 ### 2. Download the dataset
 
-Get your Kaggle API key from https://www.kaggle.com/settings → API → Create New Token, place `kaggle.json` at `~/.kaggle/kaggle.json`, then run:
+Get your Kaggle API key from https://www.kaggle.com/settings → **API → Create New Token**, place `kaggle.json` at `~/.kaggle/kaggle.json`, then:
 
 ```bash
-python download_dataset.py
+xray-download
 ```
 
-This downloads and extracts the [chest-xray-pneumonia](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia) dataset into a `data/` folder.
-
-Expected folder structure:
+Expected folder structure after download:
 ```
 data/
 ├── train/
@@ -39,17 +91,26 @@ data/
 ### 3. Train the model
 
 ```bash
-python train.py
+xray-train
 ```
 
-- Trains for 10 epochs by default
-- Saves the best model to `best_model.pth`
-- Prints loss and accuracy after each epoch
+- Fine-tunes DenseNet121 (pretrained on ImageNet)
+- Saves the best weights to `best_model.pth`
+- Logs metrics to MLflow (run `mlflow ui` to see them)
+- Default: 5 epochs — increase `NUM_EPOCHS` in `config.py` for better accuracy
 
-### 4. Predict on a new image
+### 4. Evaluate
 
 ```bash
-python predict.py data/test/NORMAL/IM-0001-0001.jpeg
+xray-evaluate
+```
+
+Prints accuracy, precision, recall, F1 — and opens a confusion matrix + ROC curve.
+
+### 5. Predict a single image
+
+```bash
+xray-predict data/test/NORMAL/IM-0001-0001.jpeg
 ```
 
 Output:
@@ -60,40 +121,112 @@ Output:
 ========================================
 ```
 
-Or use it in your own code:
+### 6. Visualise predictions
+
+```bash
+xray-visualize            # 12 random test images
+xray-visualize --num 24   # 24 images
+xray-visualize --only-wrong  # only mistakes
+```
+
+### 7. Grad-CAM explainability
+
+```bash
+xray-gradcam data/test/PNEUMONIA/person1_virus_1.jpeg
+xray-compare                  # auto-picks 2 images per class
+xray-compare --num-per-class 4
+```
+
+Grad-CAM highlights the pixels that most influenced the prediction — useful for sanity-checking that the model is looking at the lungs.
+
+### 8. Generate a PDF report
+
+```bash
+xray-report
+```
+
+Creates `xray_report.pdf` with metrics, confusion matrix, ROC curve, and Grad-CAM samples.
+
+### 9. Export & deploy
+
+```bash
+xray-export        # save as TorchScript (.pt)
+xray-serve         # start FastAPI on http://localhost:8000
+```
+
+API docs available at http://localhost:8000/docs once the server is running.
+
+```bash
+xray-test-api      # validate predictions against test images
+```
+
+---
+
+## Configuration
+
+**All settings live in `config.py`** — it is the only file you ever need to edit.
 
 ```python
-from predict import predict
+# Key settings (config.py)
+NUM_EPOCHS = 5      # ↑ increase for better accuracy (10–20 recommended)
+BATCH_SIZE = 32     # ↓ decrease if you run out of memory
+LR         = 1e-3   # learning rate
 
-label, confidence = predict("my_xray.jpg")
-print(f"{label} — {confidence * 100:.1f}% confident")
+DATA_DIR   = "data"          # root dataset folder
+CHECKPOINT = "best_model.pth"
 ```
 
 ---
 
 ## Files
 
-| File | What it does |
+| File | Purpose |
 |---|---|
-| `model.py` | Defines the ResNet18 classifier |
-| `dataset.py` | Loads images and applies transforms |
-| `train.py` | Training loop with validation |
-| `predict.py` | Single-image inference function + CLI |
-| `download_dataset.py` | Downloads the Kaggle dataset |
+| `config.py` | **Central settings** — edit this to change anything |
+| `cli.py` | Entry points for the `xray-*` shell commands |
+| `model.py` | DenseNet121 classifier + Grad-CAM target layer |
+| `dataset.py` | Image loading, augmentation, dataloaders |
+| `train.py` | Training loop with MLflow tracking |
+| `evaluate.py` | Accuracy, F1, confusion matrix, ROC curve |
+| `predict.py` | Single-image inference |
+| `gradcam.py` | Grad-CAM heatmap generation |
+| `compare_gradcam.py` | Side-by-side Grad-CAM comparison |
+| `visualize_results.py` | Prediction grid with correctness colour coding |
+| `report.py` | PDF report generator |
+| `export.py` | TorchScript export |
+| `app.py` | FastAPI prediction server |
+| `test_api.py` | API validation script |
+| `download_dataset.py` | Kaggle dataset downloader |
+| `demo.py` | Interactive menu |
+| `pyproject.toml` | Package definition (enables `xray-*` commands) |
+| `Dockerfile` | Container for cloud deployment |
+| `requirements.txt` | Dependency list |
 
 ---
 
-## How it works
+## How It Works
 
-1. **Model**: Pretrained ResNet18 (ImageNet weights). All layers are frozen except a new final classifier (`512 → 128 → 2`).
-2. **Training**: Fine-tuning with Adam optimizer and CrossEntropy loss. Augmentation (flip, rotation, brightness) is applied to the training set only.
-3. **Classes**: Index `0` = NORMAL, Index `1` = PNEUMONIA.
-4. **GPU**: Automatically uses CUDA if available, otherwise CPU.
+1. **Model**: DenseNet121 pretrained on ImageNet. The classifier head is replaced with a 2-class output layer and the whole network is fine-tuned.
+2. **Training**: Adam optimiser, CrossEntropy loss. Training images are augmented (random flip, rotation, colour jitter). The best validation-accuracy checkpoint is saved.
+3. **Explainability**: Grad-CAM uses gradients flowing into the last DenseNet dense block to produce a heatmap showing which regions drove the prediction.
+4. **Deployment**: The model is exported to TorchScript (no Python class needed to load it) and served through FastAPI with a `/predict` endpoint that accepts an uploaded image.
+
+---
+
+## Docker Deployment
+
+```bash
+docker build -t xray-pneumonia .
+docker run -p 8000:8000 xray-pneumonia
+```
+
+Then open http://localhost:8000/docs for the interactive API.
 
 ---
 
 ## Tips
 
-- The Kaggle dataset has very few validation images (8 per class). Val accuracy may be noisy — watch training loss as well.
-- Increase `NUM_EPOCHS` in `train.py` for better results (20–30 is common).
-- Unfreeze more ResNet layers for deeper fine-tuning once the head is trained.
+- The val split is very small (8 images per class). Val accuracy can be noisy — watch training loss too.
+- For best accuracy: set `NUM_EPOCHS = 20` in `config.py` before training.
+- Grad-CAM should highlight lung regions — if it's highlighting the edges of the image, the model may need more training.
+- Run `mlflow ui` after training to compare experiments visually.
