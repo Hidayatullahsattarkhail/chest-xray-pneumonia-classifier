@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { UploadCloud, FileImage, X, AlertCircle, Loader2, CheckCircle2, ShieldCheck } from "lucide-react";
+import { UploadCloud, FileImage, X, AlertCircle, Loader2, CheckCircle2, ShieldCheck, Download } from "lucide-react";
+import { exportReportPDF } from "@/lib/export-pdf";
 import { analyzeImage, type PredictionResult } from "@/lib/api";
 
 export function UploadAnalyzer() {
@@ -10,6 +11,7 @@ export function UploadAnalyzer() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PredictionResult | null>(null);
@@ -110,8 +112,7 @@ export function UploadAnalyzer() {
     }, 60000);
 
     try {
-      const base64 = await fileToBase64(file);
-      const res = await analyzeImage(base64, setStatusMessage, signal);
+      const res = await analyzeImage(file, setStatusMessage, signal);
       setResult(res);
       setStatusMessage("Analysis complete.");
     } catch (err: any) {
@@ -126,6 +127,18 @@ export function UploadAnalyzer() {
       abortControllerRef.current = null;
     }
   };
+
+  const handleExportPDF = useCallback(async () => {
+    if (!result || !previewUrl || !file) return;
+    setIsExporting(true);
+    try {
+      await exportReportPDF(previewUrl, file.name, result);
+    } catch (err) {
+      console.error("PDF export failed:", err);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [result, previewUrl, file]);
 
   const normalConf = result?.confidences.find(c => c.label === "NORMAL")?.confidence || 0;
   const pneumoniaConf = result?.confidences.find(c => c.label === "PNEUMONIA")?.confidence || 0;
@@ -250,7 +263,19 @@ export function UploadAnalyzer() {
                         </div>
                       </div>
 
-                      <div className="mt-8 pt-4 border-t border-slate-200">
+                      <div className="mt-8 pt-4 border-t border-slate-200 flex flex-col gap-2">
+                        <Button
+                          className="w-full gap-2"
+                          onClick={handleExportPDF}
+                          disabled={isExporting}
+                        >
+                          {isExporting ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Download className="w-4 h-4" />
+                          )}
+                          {isExporting ? "Generating PDF..." : "Export PDF Report"}
+                        </Button>
                         <Button variant="outline" className="w-full" onClick={clearSelection}>
                           Analyze Another Image
                         </Button>
