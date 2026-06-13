@@ -13,6 +13,7 @@ model.py
 predict.py
 pyproject.toml
 report.py
+status.py
 test_api.py
 train.py
 verify_dataset.py

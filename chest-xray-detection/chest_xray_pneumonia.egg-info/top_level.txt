@@ -11,6 +11,7 @@ gradcam
 model
 predict
 report
+status
 test_api
 train
 verify_dataset

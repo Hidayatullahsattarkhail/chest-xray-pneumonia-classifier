@@ -169,6 +169,14 @@ def test_api():
     test_module.run_tests(base_url=args.url, num_per_class=args.num)
 
 
+def status():
+    """xray-status — quick one-screen dashboard: dataset, models, API, config."""
+    import status as status_module
+    ok = status_module.run_status()
+    import sys
+    sys.exit(0 if ok else 1)
+
+
 def verify():
     """xray-verify — check dataset structure and confirm all paths are correct."""
     import verify_dataset
