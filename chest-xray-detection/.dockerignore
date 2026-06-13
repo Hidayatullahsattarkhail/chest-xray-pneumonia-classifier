@@ -1,0 +1,13 @@
+data/
+mlflow.db
+mlruns/
+__pycache__/
+*.pyc
+*.pyo
+*.pth.tmp
+predictions_*.png
+gradcam_*.png
+compare_gradcam.png
+roc_curve.png
+xray_report.pdf
+.env
