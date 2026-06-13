@@ -61,22 +61,29 @@ export function UploadAnalyzer() {
     }
   }, []);
 
-  // Make loadSample available globally so the SampleImages component can use it
+  // Make loadSample available globally so the SampleImages component can use it.
+  // Accepts either a File object (new) or a URL string (legacy).
   useEffect(() => {
-    (window as any).loadSampleToAnalyzer = async (url: string) => {
+    (window as any).loadSampleToAnalyzer = async (fileOrUrl: File | string) => {
       try {
         clearSelection();
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const f = new File([blob], "sample-xray.jpg", { type: "image/jpeg" });
+        let f: File;
+        if (fileOrUrl instanceof File) {
+          f = fileOrUrl;
+        } else {
+          const response = await fetch(fileOrUrl);
+          const blob = await response.blob();
+          const ext = blob.type === "image/png" ? "png" : "jpg";
+          f = new File([blob], `sample-xray.${ext}`, { type: blob.type || "image/jpeg" });
+        }
         handleFileChange(f);
-        // We delay the analyze call slightly to let state update visually
+        // Delay slightly to let state update visually before auto-clicking
         setTimeout(() => {
-          const btn = document.getElementById('analyze-btn');
+          const btn = document.getElementById("analyze-btn");
           if (btn) btn.click();
         }, 300);
       } catch (err) {
-        console.error("Failed to load sample", err);
+        console.error("Failed to load sample:", err);
       }
     };
     return () => {

@@ -1,0 +1,39 @@
+Polish this PneumoScan AI website to a production-ready, professional standard. Implement the following:
+
+1. SEO & METADATA
+- Add a proper favicon (medical/AI-themed, simple icon)
+- Set page title to "PneumoScan AI | Chest X-Ray Pneumonia Detection"
+- Add meta description, Open Graph tags, and Twitter card tags for social sharing
+
+2. PROMINENT MEDICAL DISCLAIMER
+- Convert the disclaimer into a persistent, subtle top banner (dismissible) AND keep an expanded version near the results section
+- Use clear but non-alarming language: "Educational demo only — not for clinical use. Always consult a licensed physician."
+
+3. MODEL PERFORMANCE / TRUST SECTION
+- Add a new "Model Performance" section with a clean stat-card grid showing: Test Accuracy, Precision, Recall, F1-Score (use placeholder values like 92%, 90%, 94%, 92% — I'll update with real numbers)
+- Include a short note: "Evaluated on the held-out test set from the Chest X-Ray Pneumonia dataset (Kermany et al.)"
+
+4. SAMPLE IMAGES FOR QUICK TESTING
+- Add 2-3 clickable sample X-ray thumbnails (one NORMAL, one/two PNEUMONIA) above or beside the upload area, labeled "Try a sample image"
+- Clicking one auto-loads it into the upload area and triggers analysis
+
+5. RESULTS UX IMPROVEMENTS
+- Add subtle fade-in animation when results appear
+- Color-code confidence bars (green for NORMAL, red/orange for PNEUMONIA) with smooth fill animation
+- Add a "Reset / Analyze Another" button after results show
+
+6. ABOUT SECTION
+- Write a proper 2-3 paragraph About section: explain this is a final-year BS AI capstone-adjacent project, built using transfer learning (DenseNet121) on the Chest X-Ray Pneumonia dataset, deployed via Hugging Face Spaces, with Grad-CAM interpretability used during development
+
+7. FOOTER
+- Clean footer with: "Built by Hidayat Ullah | BS Artificial Intelligence, PAF-IAST" plus links to GitHub and LinkedIn (use placeholder # links I can edit)
+- Add a small "Powered by DenseNet121 + Hugging Face + Gradio" tech badge row
+
+8. GENERAL POLISH
+- Ensure full mobile responsiveness — test all sections on narrow viewports
+- Add smooth scroll-to-section navigation from the navbar
+- Add a simple 404 page with a "Back to Home" button
+- Ensure consistent spacing, typography hierarchy, and color contrast (WCAG AA) throughout
+- Add subtle hover states and transitions on all interactive elements (buttons, cards, links)
+
+Keep the existing color scheme (blues/teals, medical aesthetic) and don't break the working API integration.
