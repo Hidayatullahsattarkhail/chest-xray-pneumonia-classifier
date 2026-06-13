@@ -1,0 +1,82 @@
+Build a professional, modern medical AI web app called "PneumoScan AI" — a Chest X-Ray Pneumonia Classifier.
+
+DESIGN:
+
+Clean, medical/healthcare aesthetic — soft blues, whites, and teal accents
+
+Hero section with title "PneumoScan AI" and subtitle "AI-Powered Pneumonia Detection from Chest X-Rays"
+
+Trustworthy, professional tone (this is a medical demo tool)
+
+Responsive layout, mobile-friendly
+
+CORE FUNCTIONALITY:
+
+An image upload component where users can drag-and-drop or click to upload a chest X-ray image (JPG/PNG)
+
+A preview of the uploaded image before submission
+
+An "Analyze X-Ray" button that sends the image to my Hugging Face Gradio API
+
+Show a loading spinner while the API processes (typically ~300-400ms but allow for cold starts up to 30s)
+
+Display results clearly:
+
+Predicted class (the "label" field, e.g. NORMAL or PNEUMONIA) as a large, color-coded badge (green for NORMAL, red/orange for PNEUMONIA)
+
+Confidence score for each class from "confidences" array, shown as percentage bars for both NORMAL and PNEUMONIA
+
+Add a disclaimer section: "This tool is for educational/demonstration purposes only and is NOT a substitute for professional medical diagnosis. Always consult a qualified healthcare provider."
+
+API INTEGRATION DETAILS:
+
+This is a Gradio app hosted at: https://hidayatullah099-pneumonia-xray-classifier.hf.space
+
+Use the Gradio REST API (event-based, two-step):
+
+Step 1 - POST the image to start prediction:
+
+POST https://hidayatullah099-pneumonia-xray-classifier.hf.space/gradio_api/call/predict
+
+Content-Type: application/json
+
+Body: { "data": [{"path": "<base64 data URI of the uploaded image>", "meta": {"_type": "gradio.FileData"}}] }
+
+This returns: { "event_id": "<some-id>" }
+
+Step 2 - GET the result using the event_id:
+
+GET https://hidayatullah099-pneumonia-xray-classifier.hf.space/gradio_api/call/predict/<event_id>
+
+This returns a Server-Sent Events (SSE) stream. Parse the "data" event line, which contains a JSON array. The first element is an object:
+
+{
+
+"label": "NORMAL" | "PNEUMONIA",
+
+"confidences": [
+
+{ "label": "NORMAL", "confidence": 0.0-1.0 },
+
+{ "label": "PNEUMONIA", "confidence": 0.0-1.0 }
+]
+
+}
+
+Convert the uploaded image file to base64 data URI before sending. Handle the SSE response by reading the stream and parsing lines starting with "data: ".
+
+Handle errors gracefully — if the API call fails or times out, show a friendly error message and suggest the user try again (the free-tier Space may be sleeping and need ~30s to wake up).
+
+ADDITIONAL SECTIONS:
+
+"How it works" section explaining: transfer learning with DenseNet121, trained on a chest X-ray dataset, deployed via Hugging Face Spaces
+
+"About" section with project description
+
+Footer with credits: "Built by Hidayat Ullah | BS AI, PAF-IAST"
+
+ADDITIONAL UI ELEMENTS:
+
+Sample images section (NORMAL and PNEUMONIA examples) users can click to test without uploading their own
+
+Clear/reset button after a result is shown

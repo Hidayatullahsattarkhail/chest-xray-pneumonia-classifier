@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "PneumoScan AI"
+version = "1.0.0"
+id = "artifacts/pneumoscan"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18132
+
+[services.development]
+run = "pnpm --filter @workspace/pneumoscan run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pneumoscan", "run", "build" ]
+publicDir = "artifacts/pneumoscan/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18132"
+BASE_PATH = "/"
