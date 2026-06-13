@@ -29,8 +29,7 @@ from gradcam import generate_heatmap
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-DATA_DIR   = "data/test"
-CHECKPOINT = "best_model.pth"
+from config import CHECKPOINT, TEST_DATA_DIR as DATA_DIR
 
 CORRECT_COLOR   = "#2ecc71"
 WRONG_COLOR     = "#e74c3c"

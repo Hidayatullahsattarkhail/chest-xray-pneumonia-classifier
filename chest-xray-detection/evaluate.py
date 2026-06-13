@@ -36,9 +36,7 @@ from dataset import get_dataloaders, CLASS_NAMES
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-DATA_DIR   = "data"
-CHECKPOINT = "best_model.pth"
-BATCH_SIZE = 32
+from config import DATA_DIR, CHECKPOINT, BATCH_SIZE
 
 # ── Device ────────────────────────────────────────────────────────────────────
 

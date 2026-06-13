@@ -19,7 +19,7 @@ from dataset import get_transforms, CLASS_NAMES
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-CHECKPOINT = "best_model.pth"   # Path to your saved model weights
+from config import CHECKPOINT
 
 # ── Device ────────────────────────────────────────────────────────────────────
 

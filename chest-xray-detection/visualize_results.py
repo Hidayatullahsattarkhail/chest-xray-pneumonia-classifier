@@ -24,8 +24,7 @@ from dataset import get_transforms, CLASS_NAMES
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-DATA_DIR   = "data/test"    # Folder with NORMAL/ and PNEUMONIA/ subfolders
-CHECKPOINT = "best_model.pth"
+from config import CHECKPOINT, TEST_DATA_DIR as DATA_DIR
 
 # Colour coding: green = correct, red = wrong
 CORRECT_COLOR = "#2ecc71"   # green

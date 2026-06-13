@@ -32,11 +32,8 @@ import requests
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-DEFAULT_URL       = "http://localhost:8000"
-DEFAULT_NUM       = 5          # Images per class to test
-TEST_DIR          = "data/test"
-CLASS_NAMES       = ["NORMAL", "PNEUMONIA"]
-REQUEST_TIMEOUT   = 30         # Seconds before giving up on a request
+from config import REQUEST_TIMEOUT, CLASS_NAMES, TEST_DATA_DIR as TEST_DIR
+from config import API_URL as DEFAULT_URL, NUM_TEST_IMAGES as DEFAULT_NUM
 
 # Terminal colour codes (fall back to plain text on Windows)
 GREEN  = "\033[92m" if sys.platform != "win32" else ""

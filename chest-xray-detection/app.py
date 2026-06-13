@@ -32,17 +32,8 @@ from pydantic import BaseModel
 
 # The TorchScript model is preferred (no Python class needed to load it).
 # If it does not exist yet, we fall back to the regular .pth checkpoint.
-TORCHSCRIPT_PATH = "densenet121_pneumonia_prod.pt"
-CHECKPOINT_PATH  = "best_model.pth"
-
-CLASS_NAMES = ["NORMAL", "PNEUMONIA"]
-
-# Image size that the model was trained on
-IMAGE_SIZE  = 224
-
-# ImageNet normalization values (required because we used pretrained weights)
-MEAN = [0.485, 0.456, 0.406]
-STD  = [0.229, 0.224, 0.225]
+from config import TORCHSCRIPT_PATH, CLASS_NAMES, IMAGE_SIZE, MEAN, STD, API_HOST, API_PORT
+from config import CHECKPOINT as CHECKPOINT_PATH
 
 # ── Device ─────────────────────────────────────────────────────────────────────
 

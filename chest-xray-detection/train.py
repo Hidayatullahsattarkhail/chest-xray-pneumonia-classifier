@@ -32,12 +32,8 @@ from dataset import get_dataloaders
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-DATA_DIR    = "data"
-NUM_EPOCHS  = 5           # Increase for better accuracy (10–20 recommended)
-BATCH_SIZE  = 32
-LR          = 1e-3
-SAVE_PATH   = "best_model.pth"
-EXPERIMENT  = "DenseNet121_Pneumonia"
+from config import DATA_DIR, NUM_EPOCHS, BATCH_SIZE, LR, EXPERIMENT
+from config import CHECKPOINT as SAVE_PATH
 
 # ── Device ────────────────────────────────────────────────────────────────────
 

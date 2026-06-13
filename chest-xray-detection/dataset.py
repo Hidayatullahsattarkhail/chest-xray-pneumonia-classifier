@@ -19,11 +19,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
 
-# Image size expected by ResNet
-IMAGE_SIZE = 224
-
-# Class names — must match folder names in the dataset
-CLASS_NAMES = ["NORMAL", "PNEUMONIA"]
+from config import IMAGE_SIZE, CLASS_NAMES
 
 
 def get_transforms(split: str) -> transforms.Compose:

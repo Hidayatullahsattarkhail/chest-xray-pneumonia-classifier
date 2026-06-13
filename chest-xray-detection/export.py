@@ -24,8 +24,7 @@ from model import load_model
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-CHECKPOINT   = "best_model.pth"
-EXPORT_PATH  = "densenet121_pneumonia_prod.pt"
+from config import CHECKPOINT, TORCHSCRIPT_PATH as EXPORT_PATH
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

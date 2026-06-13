@@ -56,11 +56,8 @@ from gradcam import generate_heatmap
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-DATA_DIR    = "data"
-CHECKPOINT  = "best_model.pth"
-OUTPUT_PDF  = "xray_report.pdf"
-BATCH_SIZE  = 32
-NUM_GRADCAM = 4
+from config import DATA_DIR, CHECKPOINT, BATCH_SIZE, NUM_GRADCAM
+OUTPUT_PDF = "xray_report.pdf"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

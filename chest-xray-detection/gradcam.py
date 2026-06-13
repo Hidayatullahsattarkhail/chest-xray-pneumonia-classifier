@@ -35,8 +35,8 @@ from dataset import get_transforms, CLASS_NAMES
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-CHECKPOINT = "best_model.pth"
-device     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+from config import CHECKPOINT
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # ── Core helper: generate heatmap for one image ───────────────────────────────
