@@ -15,85 +15,122 @@ export async function analyzeImage(
 ): Promise<PredictionResult> {
   try {
     onStatusUpdate("Initiating analysis...");
-    
-    // Step 1: Start prediction (POST)
+
+    // Step 1: POST to start prediction
     const postResponse = await fetch(GRADIO_API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        data: [{ path: base64DataUri, meta: { _type: "gradio.FileData" } }]
+        data: [{ path: base64DataUri, meta: { _type: "gradio.FileData" } }],
       }),
       signal,
     });
 
     if (!postResponse.ok) {
-      throw new Error(`Failed to start prediction: ${postResponse.statusText}`);
+      throw new Error(`Failed to start prediction: ${postResponse.status} ${postResponse.statusText}`);
     }
 
     const { event_id } = await postResponse.json();
-    
-    if (!event_id) {
-      throw new Error("No event_id returned from API");
-    }
+    if (!event_id) throw new Error("No event_id returned from API");
 
-    onStatusUpdate("AI model is processing... (This may take up to 30 seconds if warming up)");
+    console.log("[PneumoScan] event_id:", event_id);
+    onStatusUpdate("AI model is processing... (may take up to 30 seconds on cold start)");
 
-    // Step 2: Get result via SSE stream (GET)
+    // Step 2: GET SSE stream
     const sseResponse = await fetch(`${GRADIO_API_URL}/${event_id}`, {
       method: "GET",
       signal,
     });
 
     if (!sseResponse.ok) {
-      throw new Error(`Failed to read prediction stream: ${sseResponse.statusText}`);
+      throw new Error(`SSE stream error: ${sseResponse.status} ${sseResponse.statusText}`);
     }
 
-    if (!sseResponse.body) {
-      throw new Error("Response body is empty");
-    }
+    if (!sseResponse.body) throw new Error("Response body is empty");
 
     const reader = sseResponse.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
+    let lastValidResult: PredictionResult | null = null;
+    let lastEventType = "";
 
     while (true) {
       const { done, value } = await reader.read();
-      
-      if (done) break;
-      
+
+      if (done) {
+        // Process any remaining data in buffer
+        if (buffer.trim()) {
+          console.log("[PneumoScan] final buffer line:", buffer);
+          tryParseLine(buffer, lastEventType, (r) => { lastValidResult = r; });
+        }
+        break;
+      }
+
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split("\n");
-      
-      // Keep the last partial line in the buffer
-      buffer = lines.pop() || "";
-      
+      // Keep the last (possibly partial) line in buffer
+      buffer = lines.pop() ?? "";
+
       for (const line of lines) {
-        if (line.startsWith("data: ")) {
-          const dataStr = line.substring(6).trim();
-          
-          try {
-            const data = JSON.parse(dataStr);
-            // The result is usually an array, first element is the output object
-            if (Array.isArray(data) && data.length > 0 && data[0].label && data[0].confidences) {
-              return data[0] as PredictionResult;
-            } else if (data.msg === "process_completed" && data.output?.data?.[0]) {
-               return data.output.data[0] as PredictionResult;
-            }
-          } catch (e) {
-            // Ignore parse errors for partial or status messages, continue reading
-            console.log("Ignored SSE data:", dataStr);
-          }
+        // Log every raw line
+        console.log("[PneumoScan] SSE line:", JSON.stringify(line));
+
+        if (line.startsWith("event: ")) {
+          lastEventType = line.slice(7).trim();
+          console.log("[PneumoScan] event type:", lastEventType);
+        } else if (line.startsWith("data: ")) {
+          const dataStr = line.slice(6).trim();
+          tryParseLine(dataStr, lastEventType, (r) => { lastValidResult = r; });
         }
       }
     }
 
+    if (lastValidResult) return lastValidResult;
     throw new Error("Stream ended without receiving a valid result.");
-  } catch (error: any) {
-    if (error.name === "AbortError") {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === "AbortError") {
       throw new Error("Request timed out after 60 seconds.");
     }
     throw error;
+  }
+}
+
+function tryParseLine(
+  dataStr: string,
+  eventType: string,
+  onResult: (r: PredictionResult) => void
+) {
+  try {
+    const parsed = JSON.parse(dataStr);
+    console.log("[PneumoScan] parsed data (event=" + eventType + "):", parsed);
+
+    // Case 1: array where first element has label + confidences
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      const candidate = parsed[0];
+      if (candidate && typeof candidate === "object" && "label" in candidate && "confidences" in candidate) {
+        console.log("[PneumoScan] ✓ valid result found:", candidate);
+        onResult(candidate as PredictionResult);
+        return;
+      }
+    }
+
+    // Case 2: direct object with label + confidences
+    if (parsed && typeof parsed === "object" && "label" in parsed && "confidences" in parsed) {
+      console.log("[PneumoScan] ✓ valid result (direct object):", parsed);
+      onResult(parsed as PredictionResult);
+      return;
+    }
+
+    // Case 3: nested in output.data
+    if (parsed?.output?.data?.[0]?.label) {
+      const candidate = parsed.output.data[0];
+      console.log("[PneumoScan] ✓ valid result (nested output.data):", candidate);
+      onResult(candidate as PredictionResult);
+      return;
+    }
+
+    console.log("[PneumoScan] data line has no label field, skipping");
+  } catch {
+    console.log("[PneumoScan] could not parse data line:", dataStr);
   }
 }
