@@ -15,6 +15,7 @@ pyproject.toml
 report.py
 test_api.py
 train.py
+verify_dataset.py
 visualize_results.py
 chest_xray_pneumonia.egg-info/PKG-INFO
 chest_xray_pneumonia.egg-info/SOURCES.txt

@@ -16,18 +16,33 @@ Quick-start tweaks for beginners:
 # ─────────────────────────────────────────────────────────────────────────────
 
 import os
+from pathlib import Path
 
-# Root folder containing train/, val/, test/ subfolders
-DATA_DIR = "data"
+# Absolute path to the chest-xray-detection/ folder.
+# All other paths are derived from this so the project works regardless of
+# which directory you run a command from.
+_PROJECT_ROOT = Path(__file__).resolve().parent
 
-# Derived path — scripts that work on the test split use this
+# ── Dataset root ──────────────────────────────────────────────────────────────
+# The Kaggle download extracts to a nested "chest_xray/" subfolder, so we
+# auto-detect both common layouts:
+#   Layout A (direct):  data/train/  data/val/  data/test/
+#   Layout B (Kaggle):  data/chest_xray/train/  ...
+_data_base = _PROJECT_ROOT / "data"
+_kaggle_nested = _data_base / "chest_xray"
+if _kaggle_nested.is_dir() and (_kaggle_nested / "train").is_dir():
+    DATA_DIR = str(_kaggle_nested)   # Kaggle-style nested layout
+else:
+    DATA_DIR = str(_data_base)       # Standard flat layout
+
+# Derived path — scripts that work only on the test split use this
 TEST_DATA_DIR = os.path.join(DATA_DIR, "test")
 
-# Filename for the best trained model weights (saved during training)
-CHECKPOINT = "best_model.pth"
+# Saved model weights produced by train.py
+CHECKPOINT = str(_PROJECT_ROOT / "best_model.pth")
 
-# Filename for the TorchScript export (used by the FastAPI server)
-TORCHSCRIPT_PATH = "densenet121_pneumonia_prod.pt"
+# TorchScript export produced by export.py (used by the FastAPI server)
+TORCHSCRIPT_PATH = str(_PROJECT_ROOT / "densenet121_pneumonia_prod.pt")
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  MODEL & PREPROCESSING

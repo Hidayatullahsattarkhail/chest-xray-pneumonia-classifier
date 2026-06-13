@@ -10,4 +10,5 @@ xray-report = cli:report
 xray-serve = cli:serve
 xray-test-api = cli:test_api
 xray-train = cli:train
+xray-verify = cli:verify
 xray-visualize = cli:visualize

@@ -169,6 +169,14 @@ def test_api():
     test_module.run_tests(base_url=args.url, num_per_class=args.num)
 
 
+def verify():
+    """xray-verify — check dataset structure and confirm all paths are correct."""
+    import verify_dataset
+    success = verify_dataset.verify()
+    import sys
+    sys.exit(0 if success else 1)
+
+
 def demo():
     """xray-demo — launch the interactive command-line menu."""
     import demo as demo_module

@@ -13,4 +13,5 @@ predict
 report
 test_api
 train
+verify_dataset
 visualize_results
