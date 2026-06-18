@@ -1,0 +1,3 @@
+[build]
+  command   = "pnpm --filter @workspace/pneumoscan run build"
+  publish   = "artifacts/pneumoscan/dist/public"
